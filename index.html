@@ -200,12 +200,12 @@ body.skin-rainbow .orb-bg{background:conic-gradient(#ff6b6b,#ffd93d,#6bcb77,#4d9
   </div>
   <div id="orb-area">
     <div id="acc-layer"></div>
-    <button id="orb-btn" aria-label="Click the orb" ontouchstart="if(!dungeonOpen&&!evOpen){doClick(event.touches[0].clientX,event.touches[0].clientY,1);}event.preventDefault();" onclick="if(!dungeonOpen&&!evOpen)doClick(event.clientX,event.clientY,1);">
+    <button id="orb-btn" aria-label="Click the orb" ontouchstart="orbTap(event,1)" onclick="orbTap(event,1)">
       <div class="orb-layer orb-ring3"></div><div class="orb-layer orb-ring2"></div>
       <div class="orb-layer orb-ring"></div><div class="orb-layer orb-bg"></div>
       <div class="orb-layer orb-shine"></div><div class="orb-layer orb-pulse"></div>
     </button>
-    <button id="orb-btn2" aria-label="Bonus orb" title="Bonus Orb — 25% click power" ontouchstart="if(!dungeonOpen&&!evOpen){doClick(event.touches[0].clientX,event.touches[0].clientY,0.25);}event.preventDefault();" onclick="if(!dungeonOpen&&!evOpen)doClick(event.clientX,event.clientY,0.25);">
+    <button id="orb-btn2" aria-label="Bonus orb" title="Bonus Orb — 25% click power" ontouchstart="orbTap(event,0.25)" onclick="orbTap(event,0.25)">
       <div class="orb-layer orb-ring"></div><div class="orb-layer orb-bg"></div>
       <div class="orb-layer orb-shine"></div><div class="orb-layer orb-pulse"></div>
     </button>
@@ -424,6 +424,21 @@ setInterval(()=>{if(!S.goldenOn||gVis||evOpen||dungeonOpen)return;gVis=true;gEl=
 // click
 let clickN=0,combo=0,comboT=null;
 
+// Safe orb tap — works from inline HTML handlers on iOS Safari
+function orbTap(e, mult){
+e.preventDefault();
+if(dungeonOpen || evOpen) return;
+var cx, cy;
+if(e.touches && e.touches.length > 0){
+cx = e.touches[0].clientX;
+cy = e.touches[0].clientY;
+} else {
+cx = e.clientX;
+cy = e.clientY;
+}
+doClick(cx, cy, mult);
+}
+
 function doClick(cx,cy,mult){
 let v=Math.round(ecp()*mult);if(S.multiClick>1)v*=S.multiClick;
 let crit=false;if((S.critChance||0)>0&&Math.random()<S.critChance){v=Math.round(v*(S.critMul||2));crit=true;unlockAch(“crit_hit”);S._ch2Crits=(S._ch2Crits||0)+1;if(S._ch2Crits>=100)unlockAch(“ch2_crit100”);}
@@ -457,7 +472,7 @@ hpMul:25, priceMul:2.5,
 budgetMul:0.5
 }
 };
-function getDiff(){return DIFF[S.difficulty]||DIFF.normal;}
+function getDiff(){return DIFF[S.difficulty]||DIFF.normal||{label:“Normal”,col:”#a78bfa”,hpMul:1,priceMul:1,budgetMul:1};}
 
 function showDifficultyScreen(){
 const ov=document.createElement(‘div’);ov.id=‘diff-screen’;
