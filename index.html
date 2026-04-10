@@ -7,9 +7,9 @@
 <title>Orb Clicker</title>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
-html,body{width:100%;height:100%;overflow:hidden;touch-action:none;background:#04020d;}
+html,body{width:100%;height:100%;overflow:hidden;background:#04020d;}
 :root{--bg:#04020d;--panel:rgba(12,6,30,.98);--border:rgba(167,139,250,.22);--muted:#6b5f8a;--gold:#fbbf24;--gold-dim:#78350f;--sat:env(safe-area-inset-top,0px);--sab:env(safe-area-inset-bottom,0px);--sal:env(safe-area-inset-left,0px);--sar:env(safe-area-inset-right,0px);--o1:#c4b5fd;--o2:#7c3aed;--o3:#2e1065;--o4:#0d0520;--og1:rgba(124,58,237,.6);--og2:rgba(124,58,237,.25);--oglow:#7c3aed;--oshine:rgba(255,255,255,.45);--oring:rgba(167,139,250,.22);--oring2:rgba(167,139,250,.1);--pulse-col:rgba(124,58,237,.55);--core:#a78bfa;}
-body{background:var(--bg);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#ede9f8;display:flex;position:fixed;inset:0;}
+body{background:var(--bg);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#ede9f8;display:flex;width:100%;height:100%;overflow:hidden;}
 #stars{position:fixed;inset:0;pointer-events:none;z-index:0;}
 .star{position:absolute;border-radius:50%;background:#fff;animation:twinkle var(--d,3s) ease-in-out infinite alternate;opacity:0;}
 @keyframes twinkle{from{opacity:.04}to{opacity:var(--mo,.6)}}
@@ -24,8 +24,8 @@ body{background:var(--bg);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI
 #multi-row{display:flex;align-items:center;gap:6px;flex-wrap:wrap;justify-content:center;}
 .multi-btn{padding:3px 10px;border-radius:7px;border:1px solid var(--border);background:rgba(255,255,255,.04);cursor:pointer;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;font-size:.64rem;font-weight:600;color:var(--muted);transition:all .15s;}
 .multi-btn.active,.multi-btn:hover{background:rgba(124,58,237,.25);border-color:var(--core);color:var(--core);}
-#orb-area{position:relative;display:flex;align-items:center;justify-content:center;gap:20px;flex-shrink:0;}
-#orb-btn{position:relative;width:clamp(130px,23vmin,250px);height:clamp(130px,23vmin,250px);border-radius:50%;border:none;background:none;cursor:pointer;outline:none;transition:transform .08s;z-index:2;}
+#orb-area{position:relative;display:flex;align-items:center;justify-content:center;gap:20px;flex-shrink:0;touch-action:manipulation;}
+#orb-btn{position:relative;width:clamp(130px,23vmin,250px);height:clamp(130px,23vmin,250px);border-radius:50%;border:none;background:none;cursor:pointer;outline:none;transition:transform .08s;z-index:2;-webkit-tap-highlight-color:transparent;touch-action:manipulation;}
 #orb-btn:active{transform:scale(.88)!important;}
 #orb-btn2{position:relative;width:clamp(65px,11vmin,120px);height:clamp(65px,11vmin,120px);border-radius:50%;border:none;background:none;cursor:pointer;outline:none;transition:transform .08s;z-index:2;display:none;}
 #orb-btn2:active{transform:scale(.88)!important;}
@@ -365,7 +365,9 @@ setInterval(()=>{if(!S.goldenOn||gVis||evOpen||dungeonOpen)return;gVis=true;gEl=
 // click
 let clickN=0,combo=0,comboT=null;
 document.getElementById(“orb-btn”).addEventListener(“click”,e=>doClick(e.clientX,e.clientY,1));
+document.getElementById(“orb-btn”).addEventListener(“touchstart”,e=>{e.preventDefault();const t=e.touches[0];doClick(t.clientX,t.clientY,1);},{passive:false});
 document.getElementById(“orb-btn2”).addEventListener(“click”,e=>doClick(e.clientX,e.clientY,.25));
+document.getElementById(“orb-btn2”).addEventListener(“touchstart”,e=>{e.preventDefault();const t=e.touches[0];doClick(t.clientX,t.clientY,.25);},{passive:false});
 function doClick(cx,cy,mult){
 let v=Math.round(ecp()*mult);if(S.multiClick>1)v*=S.multiClick;
 let crit=false;if((S.critChance||0)>0&&Math.random()<S.critChance){v=Math.round(v*(S.critMul||2));crit=true;unlockAch(“crit_hit”);}
