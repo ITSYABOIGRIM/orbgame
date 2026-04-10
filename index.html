@@ -200,12 +200,12 @@ body.skin-rainbow .orb-bg{background:conic-gradient(#ff6b6b,#ffd93d,#6bcb77,#4d9
   </div>
   <div id="orb-area">
     <div id="acc-layer"></div>
-    <button id="orb-btn" aria-label="Click the orb">
+    <button id="orb-btn" aria-label="Click the orb" ontouchstart="if(!dungeonOpen&&!evOpen){doClick(event.touches[0].clientX,event.touches[0].clientY,1);}event.preventDefault();" onclick="if(!dungeonOpen&&!evOpen)doClick(event.clientX,event.clientY,1);">
       <div class="orb-layer orb-ring3"></div><div class="orb-layer orb-ring2"></div>
       <div class="orb-layer orb-ring"></div><div class="orb-layer orb-bg"></div>
       <div class="orb-layer orb-shine"></div><div class="orb-layer orb-pulse"></div>
     </button>
-    <button id="orb-btn2" aria-label="Bonus orb" title="Bonus Orb — 25% click power">
+    <button id="orb-btn2" aria-label="Bonus orb" title="Bonus Orb — 25% click power" ontouchstart="if(!dungeonOpen&&!evOpen){doClick(event.touches[0].clientX,event.touches[0].clientY,0.25);}event.preventDefault();" onclick="if(!dungeonOpen&&!evOpen)doClick(event.clientX,event.clientY,0.25);">
       <div class="orb-layer orb-ring"></div><div class="orb-layer orb-bg"></div>
       <div class="orb-layer orb-shine"></div><div class="orb-layer orb-pulse"></div>
     </button>
@@ -213,7 +213,7 @@ body.skin-rainbow .orb-bg{background:conic-gradient(#ff6b6b,#ffd93d,#6bcb77,#4d9
   <div id="combo-wrap"></div>
 </div>
 <button id="save-btn" title="Save / Load">💾</button>
-<div id="shop-tab"><div style="font-size:1.5rem">🔮</div><span style="font-size:.46rem;color:var(--muted);text-transform:uppercase;letter-spacing:.1em">SHOP</span><span id="shop-badge">!</span></div>
+<div id="shop-tab" ontouchend="event.preventDefault();var s=!shopOpen;shopOpen=s;document.getElementById('shop-panel').classList.toggle('open',s);if(s)renderShop();"><div style="font-size:1.5rem">🔮</div><span style="font-size:.46rem;color:var(--muted);text-transform:uppercase;letter-spacing:.1em">SHOP</span><span id="shop-badge">!</span></div>
 <div id="shop-panel">
   <div id="shop-header"><h2>Orb Bazaar</h2><span id="shop-orbs">0 orbs</span><button id="shop-close">✕</button></div>
   <div id="shop-timer"><div id="shop-timer-dot"></div><span id="shop-timer-txt">Next event: 5:00</span></div>
@@ -434,32 +434,7 @@ addOrbs(v);updateDisplay();spawnLabel(cx,cy,v,crit);popCount();checkBadge();chec
 function spawnLabel(x,y,v,crit){const el=document.createElement(“div”);el.className=“float-label”;if(crit){el.style.color=”#fbbf24”;el.style.fontSize=“1.2rem”;el.textContent=“CRIT +”+fmt(v)+”!”;}else el.textContent=”+”+fmt(v);el.style.left=(x-20+(Math.random()*34-17))+“px”;el.style.top=(y-20)+“px”;document.body.appendChild(el);el.addEventListener(“animationend”,()=>el.remove());}
 function popCount(){const el=document.getElementById(“orb-count”);el.classList.remove(“pop”);void el.offsetWidth;el.classList.add(“pop”);setTimeout(()=>el.classList.remove(“pop”),80);}
 
-// Document-level tap handler — bypasses all z-index/pointer-event issues on Safari iOS
-function isInEl(el, x, y){
-if(!el) return false;
-const r = el.getBoundingClientRect();
-return x >= r.left && x <= r.right && y >= r.top && y <= r.bottom;
-}
-document.addEventListener(‘touchstart’, function(e){
-const t = e.touches[0];
-const x = t.clientX, y = t.clientY;
-const orb = document.getElementById(‘orb-btn’);
-const orb2 = document.getElementById(‘orb-btn2’);
-if(isInEl(orb, x, y) && !dungeonOpen && !evOpen){
-e.preventDefault();
-doClick(x, y, 1);
-return;
-}
-if(orb2 && orb2.style.display !== ‘none’ && isInEl(orb2, x, y) && !dungeonOpen && !evOpen){
-e.preventDefault();
-doClick(x, y, 0.25);
-return;
-}
-}, {passive: false});
-// Also keep click for non-touch devices
-document.getElementById(‘orb-btn’).addEventListener(‘click’, function(e){
-if(!dungeonOpen && !evOpen) doClick(e.clientX, e.clientY, 1);
-});
+// touch handled via inline ontouchstart on buttons
 
 document.querySelectorAll(”.multi-btn,.qty-btn”).forEach(b=>b.addEventListener(“click”,()=>{buyQty=parseInt(b.dataset.qty);document.querySelectorAll(”.multi-btn,.qty-btn”).forEach(x=>x.classList.toggle(“active”,x.dataset.qty===b.dataset.qty));if(shopOpen)renderShop();}));
 function checkDualOrb(){if(!S.dualOrbUnlocked&&S.bossesDefeated>=2){S.dualOrbUnlocked=true;document.getElementById(“orb-btn2”).style.display=“block”;showMilestone(“🔮 Dual Orb Unlocked! Second orb = 25% bonus clicks!”);unlockAch(“dual_orb”);}}
@@ -488,32 +463,30 @@ function showDifficultyScreen(){
 const ov=document.createElement(‘div’);ov.id=‘diff-screen’;
 ov.style.cssText=‘position:fixed;inset:0;z-index:2000;background:radial-gradient(ellipse at 50% 40%,#120a2e,#04020d 70%);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;padding:28px;’;
 ov.innerHTML=
-‘<div style="font-size:3.5rem;margin-bottom:4px">🔮</div>’+
-‘<h1 style="font-family:Georgia,serif;font-size:1.8rem;color:#fff;text-shadow:0 0 30px #a78bfa;margin:0;letter-spacing:.05em">Orb Clicker</h1>’+
-‘<p style="font-family:Georgia,serif;font-size:.78rem;color:#a78bfa;letter-spacing:.15em;margin:0">CHAPTER 1 — THE ORB AWAKENS</p>’+
-‘<p style="font-size:.76rem;color:#6b5f8a;margin:8px 0 4px">Select your difficulty</p>’+
+‘<div style="font-size:3.5rem">🔮</div>’+
+‘<h1 style="font-family:Georgia,serif;font-size:1.8rem;color:#fff;text-shadow:0 0 30px #a78bfa;margin:0">Orb Clicker</h1>’+
+‘<p style="font-family:Georgia,serif;font-size:.78rem;color:#a78bfa;letter-spacing:.15em;margin:0">CHAPTER 1</p>’+
+‘<p style="font-size:.76rem;color:#6b5f8a;margin:8px 0 4px">Select difficulty</p>’+
 ‘<div style="display:flex;flex-direction:column;gap:10px;width:100%;max-width:320px">’+
-makeDiffBtn(‘easy’)+
-makeDiffBtn(‘normal’)+
-makeDiffBtn(‘hard’)+
+‘<button data-diff="easy" class="diff-pick-btn" style="background:rgba(255,255,255,.04);border:2px solid #22c55e66;border-radius:14px;padding:16px 18px;cursor:pointer;text-align:left;width:100%;display:flex;align-items:center;gap:13px;-webkit-tap-highlight-color:transparent;color:inherit;font-family:inherit;">’+
+‘<span style="font-size:2rem">🌱</span><div><div style="font-family:Georgia,serif;font-size:.9rem;color:#22c55e;font-weight:700">Easy</div><div style="font-size:.64rem;color:#6b5f8a;margin-top:2px">Lower boss HP. Cheaper armoury.</div></div></button>’+
+‘<button data-diff="normal" class="diff-pick-btn" style="background:rgba(255,255,255,.04);border:2px solid #a78bfa66;border-radius:14px;padding:16px 18px;cursor:pointer;text-align:left;width:100%;display:flex;align-items:center;gap:13px;-webkit-tap-highlight-color:transparent;color:inherit;font-family:inherit;">’+
+‘<span style="font-size:2rem">⚔️</span><div><div style="font-family:Georgia,serif;font-size:.9rem;color:#a78bfa;font-weight:700">Normal</div><div style="font-size:.64rem;color:#6b5f8a;margin-top:2px">Balanced challenge.</div></div></button>’+
+‘<button data-diff="hard" class="diff-pick-btn" style="background:rgba(255,255,255,.04);border:2px solid #ef444466;border-radius:14px;padding:16px 18px;cursor:pointer;text-align:left;width:100%;display:flex;align-items:center;gap:13px;-webkit-tap-highlight-color:transparent;color:inherit;font-family:inherit;">’+
+‘<span style="font-size:2rem">💀</span><div><div style="font-family:Georgia,serif;font-size:.9rem;color:#ef4444;font-weight:700">Hard</div><div style="font-size:.64rem;color:#6b5f8a;margin-top:2px">Old boss HP. Double prices.</div></div></button>’+
 ‘</div>’;
 document.body.appendChild(ov);
-// hover effects via CSS
-// Wire via both click AND touchstart for iOS Safari
-[‘easy’,‘normal’,‘hard’].forEach(d=>{
-const btn = document.getElementById(‘diff-btn-’+d);
-if(!btn) return;
-const handler = ()=>{
-S.difficulty=d;
-document.getElementById(‘diff-screen’).remove();
-updateDisplay();
-showChapter1Intro();
-};
-btn.addEventListener(‘click’, handler);
-btn.addEventListener(‘touchend’, e=>{ e.preventDefault(); handler(); }, {passive:false});
-});
+// Wire all three buttons with both click and touchend
+ov.querySelectorAll(’.diff-pick-btn’).forEach(function(btn){
+function go(e){
+e.preventDefault();e.stopPropagation();
+S.difficulty=btn.getAttribute(‘data-diff’);
+ov.remove();updateDisplay();showChapter1Intro();
 }
-function makeDiffBtn(d){
+btn.addEventListener(‘touchend’,go,{passive:false});
+btn.addEventListener(‘click’,go);
+});
+}function makeDiffBtn(d){
 const cfg=DIFF[d];
 const icons={easy:‘🌱’,normal:‘⚔️’,hard:‘💀’};
 return ‘<button id="diff-btn-'+d+'" class="diff-choice-btn" style="background:rgba(255,255,255,.04);border:2px solid '+cfg.col.replace('#','%23')+'55;border-radius:14px;padding:14px 18px;cursor:pointer;text-align:left;width:100%;display:flex;align-items:center;gap:13px;transition:background .15s;">’+
